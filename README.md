@@ -1,1 +1,1 @@
-# hivemind-project
+# Hivemind Project
