@@ -20,10 +20,7 @@ struct Neuron {
 }
 
 impl Network {
-    pub fn random(
-        rng: &mut dyn rand::RngCore,
-        layers: &[LayerTopology]
-    ) -> Self {
+    pub fn random(rng: &mut dyn rand::RngCore, layers: &[LayerTopology]) -> Self {
         assert!(layers.len() > 1);
 
         let layers = layers
@@ -43,10 +40,10 @@ impl Network {
 
 impl Layer {
     pub fn random(
-            rng: &mut dyn rand::RngCore,
-            input_neurons: usize, 
-            output_neurons: usize
-        ) -> Self {
+        rng: &mut dyn rand::RngCore,
+        input_neurons: usize,
+        output_neurons: usize,
+    ) -> Self {
         let neurons = (0..output_neurons)
             .map(|_| Neuron::random(rng, input_neurons))
             .collect();
@@ -63,10 +60,7 @@ impl Layer {
 }
 
 impl Neuron {
-    pub fn random(
-        rng: &mut dyn rand::RngCore,
-        output_size: usize
-    ) -> Self {
+    pub fn random(rng: &mut dyn rand::RngCore, output_size: usize) -> Self {
         let bias = rng.gen_range(-1.0..=1.0);
 
         let weights = (0..output_size)
@@ -90,9 +84,9 @@ impl Neuron {
 #[cfg(test)]
 mod neural_network {
     use super::*;
+    use approx::assert_relative_eq;
     use rand::SeedableRng;
     use rand_chacha::ChaCha8Rng;
-    use approx::assert_relative_eq;
 
     mod random {
         use super::*;
@@ -104,8 +98,9 @@ mod neural_network {
 
             assert_relative_eq!(neuron.bias, -0.6255188);
 
-            assert_relative_eq!(neuron.weights.as_slice(),
-            [0.67383957, 0.8181262, 0.26284897].as_slice()
+            assert_relative_eq!(
+                neuron.weights.as_slice(),
+                [0.67383957, 0.8181262, 0.26284897].as_slice()
             );
         }
 
@@ -116,21 +111,30 @@ mod neural_network {
 
             assert_relative_eq!(layer.neurons[0].bias, -0.6255188);
 
-            assert_relative_eq!(layer.neurons[0].weights.as_slice(), [0.67383957, 0.8181262, 0.26284897].as_slice());
+            assert_relative_eq!(
+                layer.neurons[0].weights.as_slice(),
+                [0.67383957, 0.8181262, 0.26284897].as_slice()
+            );
         }
 
         #[test]
         fn network() {
             let mut rng = ChaCha8Rng::from_seed(Default::default());
-            let network = Network::random(&mut rng, &[
-                LayerTopology { neurons: 3 },
-                LayerTopology { neurons: 2 },
-                LayerTopology { neurons: 1 },
-            ]);
+            let network = Network::random(
+                &mut rng,
+                &[
+                    LayerTopology { neurons: 3 },
+                    LayerTopology { neurons: 2 },
+                    LayerTopology { neurons: 1 },
+                ],
+            );
 
             assert_relative_eq!(network.layers[0].neurons[0].bias, -0.6255188);
 
-            assert_relative_eq!(network.layers[0].neurons[0].weights.as_slice(), [0.67383957, 0.8181262, 0.26284897].as_slice());
+            assert_relative_eq!(
+                network.layers[0].neurons[0].weights.as_slice(),
+                [0.67383957, 0.8181262, 0.26284897].as_slice()
+            );
         }
     }
 
@@ -143,12 +147,9 @@ mod neural_network {
                 bias: 0.5,
                 weights: vec![-0.3, 0.8],
             };
-        
-            assert_relative_eq!(
-                neuron.propagate(&[-10.0, -10.0]),
-                0.0,
-            );
-        
+
+            assert_relative_eq!(neuron.propagate(&[-10.0, -10.0]), 0.0,);
+
             assert_relative_eq!(
                 neuron.propagate(&[0.5, 1.0]),
                 (-0.3 * 0.5) + (0.8 * 1.0) + 0.5,
@@ -160,11 +161,19 @@ mod neural_network {
         #[test]
         fn layer() {
             let neurons = vec![
-                Neuron {bias: 0.0, weights: vec![0.1, 0.2, 0.3]}, 
-                Neuron {bias: 0.0, weights: vec![0.4, 0.5, 0.6]}
+                Neuron {
+                    bias: 0.0,
+                    weights: vec![0.1, 0.2, 0.3],
+                },
+                Neuron {
+                    bias: 0.0,
+                    weights: vec![0.4, 0.5, 0.6],
+                },
             ];
 
-            let layer = Layer { neurons: neurons.clone() };
+            let layer = Layer {
+                neurons: neurons.clone(),
+            };
 
             let inputs = &[-0.5, 0.0, 0.5];
 
@@ -176,15 +185,30 @@ mod neural_network {
 
         #[test]
         fn network() {
-            let layers = ( 
-                Layer {neurons: vec![
-                    Neuron {bias: 0.0, weights: vec![-0.5, -0.4, -0.3]}, 
-                    Neuron {bias: 0.0, weights: vec![-0.2, -0.1, 0.0]}
-                ]},
-                Layer {neurons: vec![Neuron {bias: 0.0, weights: vec![-0.5, 0.5]}] }
+            let layers = (
+                Layer {
+                    neurons: vec![
+                        Neuron {
+                            bias: 0.0,
+                            weights: vec![-0.5, -0.4, -0.3],
+                        },
+                        Neuron {
+                            bias: 0.0,
+                            weights: vec![-0.2, -0.1, 0.0],
+                        },
+                    ],
+                },
+                Layer {
+                    neurons: vec![Neuron {
+                        bias: 0.0,
+                        weights: vec![-0.5, 0.5],
+                    }],
+                },
             );
 
-            let network = Network { layers: vec![layers.0.clone(), layers.1.clone()]};
+            let network = Network {
+                layers: vec![layers.0.clone(), layers.1.clone()],
+            };
 
             let actual = network.propagate(vec![0.5, 0.6, 0.7]);
             let expected = layers.1.propagate(layers.0.propagate(vec![0.5, 0.6, 0.7]));
