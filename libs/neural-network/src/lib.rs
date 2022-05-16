@@ -86,24 +86,50 @@ impl Neuron {
 }
 
 #[cfg(test)]
-mod tests {
+mod neural_network {
     use super::*;
     use rand::SeedableRng;
     use rand_chacha::ChaCha8Rng;
 
     mod random {
+        use approx::assert_relative_eq;
+
         use super::*;
 
         #[test]
-        fn test() {
+        fn neuron() {
             let mut rng = ChaCha8Rng::from_seed(Default::default());
             let neuron = Neuron::random(&mut rng, 4);
 
-            approx::assert_relative_eq!(neuron.bias, -0.6255188);
+            assert_relative_eq!(neuron.bias, -0.6255188);
 
-            approx::assert_relative_eq!(neuron.weights.as_slice(),
+            assert_relative_eq!(neuron.weights.as_slice(),
             [0.67383957, 0.8181262, 0.26284897, 0.5238807].as_slice()
             );
+        }
+
+        #[test]
+        fn layer() {
+            let mut rng = ChaCha8Rng::from_seed(Default::default());
+            let layer = Layer::random(&mut rng, 4, 1);
+
+            assert_relative_eq!(layer.neurons[0].bias, -0.6255188);
+
+            assert_relative_eq!(layer.neurons[0].weights.as_slice(), [0.67383957, 0.8181262, 0.26284897, 0.5238807].as_slice());
+        }
+
+        #[test]
+        fn network() {
+            let mut rng = ChaCha8Rng::from_seed(Default::default());
+            let network = Network::random(&mut rng, &[
+                LayerTopology { neurons: 4 },
+                LayerTopology { neurons: 3 },
+                LayerTopology { neurons: 2 },
+            ]);
+
+            assert_relative_eq!(network.layers[0].neurons[0].bias, -0.6255188);
+
+            assert_relative_eq!(network.layers[0].neurons[0].weights.as_slice(), [0.67383957, 0.8181262, 0.26284897, 0.5238807].as_slice());
         }
     }
 
