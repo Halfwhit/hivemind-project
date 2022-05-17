@@ -117,7 +117,22 @@ impl UniformCrossover {
         Self
     }
 }
-impl CrossoverMethod for UniformCrossover
+impl CrossoverMethod for UniformCrossover {
+    fn crossover(&self, 
+        rng: &mut dyn RngCore, 
+        parent_a: &Chromosome, 
+        parent_b: &Chromosome
+    ) -> Chromosome {
+        assert_eq!(parent_a.len(), parent_b.len());
+
+        let parent_a = parent_a.iter();
+        let parent_b = parent_b.iter();
+       
+        parent_a.zip(parent_b)
+            .map(|(&a, &b)| if rng.gen_bool(0.5) { a } else { b })
+            .collect()
+    }
+}
 
 #[cfg(test)]
 mod genetic_algorithm {
@@ -239,6 +254,24 @@ mod genetic_algorithm {
             assert_eq!(chromosome[0], 3.0);
             assert_eq!(chromosome[1], 1.0);
             assert_eq!(chromosome[2], 2.0);
+        }
+    }
+
+    mod crossover {
+        use rand_chacha::ChaCha8Rng;
+
+        use super::*;
+
+        #[test]
+        fn uniform() {
+            let mut rng = ChaCha8Rng::from_seed(Default::default());
+            
+            let parent_a: Chromosome = (1..=100).map(|n| n as f32).collect();
+            let parent_b: Chromosome = (1..=100).map(|n| -n as f32).collect();
+
+            let child = UniformCrossover::new().crossover(&mut rng, &parent_a, &parent_b);
+
+            assert!(/* Something */);
         }
     }
 }
