@@ -39,12 +39,8 @@ where
     C: CrossoverMethod,
     M: MutationMethod,
 {
-    pub fn new(
-        selection_method: S,
-        crossover_method: C,
-        mutation_method: M,
-    ) -> Self {
-        Self { 
+    pub fn new(selection_method: S, crossover_method: C, mutation_method: M) -> Self {
+        Self {
             selection_method,
             crossover_method,
             mutation_method,
@@ -61,12 +57,12 @@ where
             .map(|_| {
                 let parent_a = self.selection_method.select(rng, population).chromosome();
                 let parent_b = self.selection_method.select(rng, population).chromosome();
-                
+
                 let mut child = self.crossover_method.crossover(rng, parent_a, parent_b);
-                
+
                 self.mutation_method.mutate(rng, &mut child);
 
-               I::create(child)
+                I::create(child)
             })
             .collect()
     }
@@ -137,24 +133,26 @@ impl UniformCrossover {
     }
 }
 impl CrossoverMethod for UniformCrossover {
-    fn crossover(&self, 
-        rng: &mut dyn RngCore, 
-        parent_a: &Chromosome, 
-        parent_b: &Chromosome
+    fn crossover(
+        &self,
+        rng: &mut dyn RngCore,
+        parent_a: &Chromosome,
+        parent_b: &Chromosome,
     ) -> Chromosome {
         assert_eq!(parent_a.len(), parent_b.len());
 
         let parent_a = parent_a.iter();
         let parent_b = parent_b.iter();
-       
-        parent_a.zip(parent_b)
+
+        parent_a
+            .zip(parent_b)
             .map(|(&a, &b)| if rng.gen_bool(0.5) { a } else { b })
             .collect()
     }
 }
 
 #[derive(Clone, Debug)]
-pub struct  GaussianMutation {
+pub struct GaussianMutation {
     /// Probability of changing a gene:
     /// - 0.0 = no genes will be touched
     /// - 1.0 = all genes will be touched
@@ -169,7 +167,7 @@ impl GaussianMutation {
     pub fn new(chance: f32, coeff: f32) -> Self {
         assert!(chance >= 0.0 && chance <= 1.0);
 
-        Self { chance, coeff}
+        Self { chance, coeff }
     }
 }
 impl MutationMethod for GaussianMutation {
@@ -219,16 +217,17 @@ mod genetic_algorithm {
             fn chromosome(&self) -> &Chromosome {
                 match self {
                     Self::WithChromosome { chromosome } => chromosome,
-                    Self::WithFitness { .. } => panic!("Not supported for TestIndividual::WithFitness")
+                    Self::WithFitness { .. } => {
+                        panic!("Not supported for TestIndividual::WithFitness")
+                    }
                 }
             }
             fn fitness(&self) -> f32 {
                 match self {
-                    Self::WithChromosome { chromosome } => { chromosome.iter().sum() }
+                    Self::WithChromosome { chromosome } => chromosome.iter().sum(),
                     Self::WithFitness { fitness } => *fitness,
                 }
             }
-
         }
 
         #[test]
@@ -269,10 +268,7 @@ mod genetic_algorithm {
 
         impl PartialEq for Chromosome {
             fn eq(&self, other: &Self) -> bool {
-                approx::relative_eq!(
-                    self.genes.as_slice(),
-                    other.genes.as_slice(),
-                )
+                approx::relative_eq!(self.genes.as_slice(), other.genes.as_slice(),)
             }
         }
 
@@ -336,12 +332,11 @@ mod genetic_algorithm {
     mod crossover {
         use super::*;
         use rand_chacha::ChaCha8Rng;
-      
 
         #[test]
         fn uniform() {
             let mut rng = ChaCha8Rng::from_seed(Default::default());
-            
+
             let parent_a: Chromosome = (1..=100).map(|n| n as f32).collect();
             let parent_b: Chromosome = (1..=100).map(|n| -n as f32).collect();
 
@@ -359,17 +354,14 @@ mod genetic_algorithm {
         use super::*;
         use rand::SeedableRng;
         use rand_chacha::ChaCha8Rng;
-    
+
         fn actual(chance: f32, coeff: f32) -> Vec<f32> {
-            let mut child = vec![1.0, 2.0, 3.0, 4.0, 5.0]
-                .into_iter()
-                .collect();
-    
+            let mut child = vec![1.0, 2.0, 3.0, 4.0, 5.0].into_iter().collect();
+
             let mut rng = ChaCha8Rng::from_seed(Default::default());
-    
-            GaussianMutation::new(chance, coeff)
-                .mutate(&mut rng, &mut child);
-    
+
+            GaussianMutation::new(chance, coeff).mutate(&mut rng, &mut child);
+
             child.into_iter().collect()
         }
 
@@ -386,10 +378,7 @@ mod genetic_algorithm {
                     let actual = actual(0.0);
                     let expected = vec![1.0, 2.0, 3.0, 4.0, 5.0];
 
-                    approx::assert_relative_eq!(
-                        actual.as_slice(),
-                        expected.as_slice(),
-                    );
+                    approx::assert_relative_eq!(actual.as_slice(), expected.as_slice(),);
                 }
             }
             mod and_nonzero_coefficient {
@@ -400,10 +389,7 @@ mod genetic_algorithm {
                     let actual = actual(0.5);
                     let expected = vec![1.0, 2.0, 3.0, 4.0, 5.0];
 
-                    approx::assert_relative_eq!(
-                        actual.as_slice(),
-                        expected.as_slice(),
-                    );
+                    approx::assert_relative_eq!(actual.as_slice(), expected.as_slice(),);
                 }
             }
         }
@@ -420,10 +406,7 @@ mod genetic_algorithm {
                     let actual = actual(0.0);
                     let expected = vec![1.0, 2.0, 3.0, 4.0, 5.0];
 
-                    approx::assert_relative_eq!(
-                        actual.as_slice(),
-                        expected.as_slice(),
-                    );
+                    approx::assert_relative_eq!(actual.as_slice(), expected.as_slice(),);
                 }
             }
 
@@ -435,10 +418,7 @@ mod genetic_algorithm {
                     let actual = actual(0.5);
                     let expected = vec![1.0, 1.7756249, 3.0, 4.1596804, 5.0];
 
-                    approx::assert_relative_eq!(
-                        actual.as_slice(),
-                        expected.as_slice(),
-                    );
+                    approx::assert_relative_eq!(actual.as_slice(), expected.as_slice(),);
                 }
             }
         }
@@ -456,10 +436,7 @@ mod genetic_algorithm {
                     let actual = actual(0.0);
                     let expected = vec![1.0, 2.0, 3.0, 4.0, 5.0];
 
-                    approx::assert_relative_eq!(
-                        actual.as_slice(),
-                        expected.as_slice(),
-                    );
+                    approx::assert_relative_eq!(actual.as_slice(), expected.as_slice(),);
                 }
             }
 
@@ -471,10 +448,7 @@ mod genetic_algorithm {
                     let actual = actual(0.5);
                     let expected = vec![1.4545316, 2.1162078, 2.7756248, 3.9505124, 4.638691];
 
-                    approx::assert_relative_eq!(
-                        actual.as_slice(),
-                        expected.as_slice(),
-                    );
+                    approx::assert_relative_eq!(actual.as_slice(), expected.as_slice(),);
                 }
             }
         }
