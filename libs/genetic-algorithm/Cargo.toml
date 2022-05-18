@@ -11,3 +11,4 @@ rand = "*"
 [dev-dependencies]
 rand_chacha    = "*"
 maplit = "*"
+approx = "*"
