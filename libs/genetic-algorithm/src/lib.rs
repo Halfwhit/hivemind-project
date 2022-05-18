@@ -165,7 +165,7 @@ pub struct GaussianMutation {
 }
 impl GaussianMutation {
     pub fn new(chance: f32, coeff: f32) -> Self {
-        assert!(chance >= 0.0 && chance <= 1.0);
+        assert!((0.0..=1.0).contains(&chance));
 
         Self { chance, coeff }
     }
@@ -263,8 +263,6 @@ mod genetic_algorithm {
 
     mod chromosomes {
         use super::*;
-        use rand::SeedableRng;
-        use rand_chacha::ChaCha8Rng;
 
         impl PartialEq for Chromosome {
             fn eq(&self, other: &Self) -> bool {
