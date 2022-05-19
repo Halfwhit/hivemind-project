@@ -1,3 +1,5 @@
+#![allow(clippy::new_without_default)]
+
 use lib_simulation as sim;
 use rand::prelude::*;
 use serde::Serialize;

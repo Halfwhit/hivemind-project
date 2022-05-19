@@ -1,4 +1,5 @@
 #![feature(type_alias_impl_trait)]
+#![allow(clippy::new_without_default, clippy::len_without_is_empty)]
 
 use rand::prelude::*;
 use std::ops::Index;
@@ -74,6 +75,7 @@ impl RouletteWheelSelection {
         Self
     }
 }
+
 impl SelectionMethod for RouletteWheelSelection {
     fn select<'a, I>(&self, rng: &mut dyn RngCore, population: &'a [I]) -> &'a I
     where
