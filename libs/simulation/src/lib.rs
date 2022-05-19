@@ -11,6 +11,7 @@ pub struct World {
     foods: Vec<Food>,
 }
 
+#[allow(dead_code)]
 #[derive(Debug)]
 pub struct Animal {
     position: na::Point2<f32>,

@@ -3,6 +3,7 @@ use rand::prelude::*;
 use serde::Serialize;
 use wasm_bindgen::prelude::*;
 
+#[allow(dead_code)]
 #[wasm_bindgen]
 pub struct Simulation {
     rng: ThreadRng,
