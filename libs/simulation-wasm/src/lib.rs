@@ -1,89 +1,55 @@
-use nalgebra as na;
+use lib_simulation as sim;
 use rand::prelude::*;
+use serde::Serialize;
+use wasm_bindgen::prelude::*;
 
+#[wasm_bindgen]
 pub struct Simulation {
-    world: World,
+    rng: ThreadRng,
+    sim: sim::Simulation,
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug, Serialize)]
 pub struct World {
-    animals: Vec<Animal>,
-    foods: Vec<Food>,
+    pub animals: Vec<Animal>,
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug, Serialize)]
 pub struct Animal {
-    position: na::Point2<f32>,
-    rotation: na::Rotation2<f32>,
-    speed: f32,
+    pub x: f32,
+    pub y: f32,
+    pub rotation: f32,
 }
 
-#[derive(Debug)]
-pub struct Food {
-    position: na::Point2<f32>,
-}
+#[wasm_bindgen]
 impl Simulation {
-    pub fn random(rng: &mut dyn RngCore) -> Self {
-        Self { world: World::random(rng)}
-    }
+    #[wasm_bindgen(constructor)]
+    pub fn new() -> Self {
+        let mut rng = thread_rng();
+        let sim = sim::Simulation::random(&mut rng);
 
-    pub fn world(&self) -> &World {
-        &self.world
+        Self { rng, sim }
+    }
+    pub fn world(&self) -> JsValue {
+        let world = World::from(self.sim.world());
+        JsValue::from_serde(&world).unwrap()
     }
 }
-impl World {
-    pub fn random(rng: &mut dyn RngCore) -> Self {
-        let animals = (0..40)
-            .map(|_| Animal::random(rng))
-            .collect();
 
-        let foods = (0..60)
-            .map(|_| Food::random(rng))
-            .collect();
-        
-        // ^ Our algorithm allows for animals and foods to overlap, so
-        // | it's hardly ideal - but good enough for our purposes.
-        // |
-        // | A more complex solution could be based off of e.g.
-        // | Poisson disk sampling:
-        // |
-        // | https://en.wikipedia.org/wiki/Supersampling
-        Self { animals, foods }
-   }
+impl From<&sim::World> for World {
+    fn from(world: &sim::World) -> Self {
+        let animals = world.animals().iter().map(Animal::from).collect();
 
-   pub fn animals(&self) -> &[Animal] {
-       &self.animals
-   }
-
-   pub fn foods(&self) -> &[Food] {
-       &self.foods
-   }
+        Self { animals }
+    }
 }
 
-impl Animal {
-    pub fn random(rng: &mut dyn RngCore) -> Self {
-        Self { 
-            position: rng.gen(),
-            rotation: rng.gen(),
-            speed: 0.002,
+impl From<&sim::Animal> for Animal {
+    fn from(animal: &sim::Animal) -> Self {
+        Self {
+            x: animal.position().x,
+            y: animal.position().y,
+            rotation: animal.rotation().angle(),
         }
-    }
-
-    pub fn position(&self) -> na::Point2<f32> {
-        self.position
-    }
-
-    pub fn rotation(&self) -> na::Rotation2<f32> {
-        self.rotation
-    }
-}
-
-impl Food {
-    pub fn random(rng: &mut dyn RngCore) -> Self {
-        Self { position: rng.gen() }
-    }
-
-    pub fn position(&self) -> na::Point2<f32> {
-        self.position
     }
 }
