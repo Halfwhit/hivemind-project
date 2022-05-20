@@ -2,10 +2,13 @@
 pub use self::{animal::*, eye::*, food::*, world::*};
 
 mod animal;
+mod animal_individual;
 mod eye;
 mod food;
 mod world;
 
+use self::animal_individual::*;
+use lib_genetic_algorithm as ga;
 use lib_neural_network as nn;
 use nalgebra as na;
 use rand::prelude::*;
@@ -15,17 +18,27 @@ const SPEED_MIN: f32 = 0.001;
 const SPEED_MAX: f32 = 0.005;
 const SPEED_ACCEL: f32 = 0.2;
 const ROTATION_ACCEL: f32 = FRAC_PI_2;
+const GENERATION_LENGTH: usize = 2500;
 
 pub struct Simulation {
     world: World,
+    ga: ga::GeneticAlgorithm<ga::RouletteWheelSelection>,
+    age: usize
 }
 
 impl Simulation {
     pub fn random(rng: &mut dyn RngCore) -> Self {
-        Self {
-            world: World::random(rng),
-        }
+        let world: World::random(rng),
+        
+        let ga = ga::GeneticAlgorithm::new(
+            ga::RouletteWheelSelection::default(),
+            ga::UniformCrossover::default(),
+            ga::GaussianMutation::new(0.01, 0.3)
+        );
+        
+        Self { world, ga, age: 0 }
     }
+}
 
     pub fn world(&self) -> &World {
         &self.world
@@ -35,6 +48,12 @@ impl Simulation {
         self.process_collisions(rng);
         self.process_brains();
         self.process_movements();
+
+        self.age += 1;
+
+        if self.age > GENERATION_LENGTH {
+            self.evolve(rng);
+        }
         
     }
 
@@ -80,6 +99,20 @@ impl Simulation {
 
             animal.speed = (animal.speed + speed).clamp(SPEED_MIN, SPEED_MAX);
             animal.rotation = na::Rotation2::new(animal.rotation.angle() + rotation);
+        }
+    }
+
+    fn evolve(&mut self, rng: &mut dyn RngCore) {
+        self.age = 0;
+
+        let current_population = ;
+
+        let evolved_population = self.ga.evolve(rng, &current_population);
+
+        self.world.animals = ;
+
+        for food in &mut self.world.foods {
+            food.position = rng.gen();
         }
     }
 }
