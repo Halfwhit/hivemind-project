@@ -41,13 +41,14 @@ CanvasRenderingContext2D.prototype.drawTriangle = function drawTriangle(x, y, si
         y + Math.sin(rotation) * size * 1.5,
     );
 
-    ctxt.stroke();
+    ctxt.fillStyle = 'rgb(255, 255, 255)';
+    ctxt.fill();
 };
 
 CanvasRenderingContext2D.prototype.drawCircle = function drawCircle(x, y, radius) {
     this.beginPath();
     this.arc(x, y, radius, 0, 2.0 * Math.PI);
-    this.fillStyle = 'rgb(0, 0, 0,)';
+    this.fillStyle = 'rgb(0, 255, 128)';
     this.fill();
 }
 
