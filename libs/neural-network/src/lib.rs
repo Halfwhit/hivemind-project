@@ -1,10 +1,11 @@
 use rand::prelude::*;
 
+#[derive(Debug)]
 pub struct Network {
     layers: Vec<Layer>,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 struct Layer {
     neurons: Vec<Neuron>,
 }
@@ -13,7 +14,7 @@ pub struct LayerTopology {
     pub neurons: usize,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 struct Neuron {
     bias: f32,
     weights: Vec<f32>,
