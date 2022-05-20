@@ -70,3 +70,20 @@ impl Default for Eye {
         Self::new(FOV_RANGE, FOV_ANGLE, CELLS)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    mod different_fov_ranges {
+        use super::*;
+        use test_case::test_case;
+
+        #[test_case(1.0)]
+        #[test_case(0.5)]
+        #[test_case(0.1)]
+        fn test(fov_range: f32) {
+            todo!()
+        }
+    }
+}
